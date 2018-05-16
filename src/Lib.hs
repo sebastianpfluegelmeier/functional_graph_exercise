@@ -2,6 +2,7 @@ module Lib
     ( Graph
     , fromFile
     , fromString
+    , distanceMatrix
     , (***)
     ) where
 import Data.List.Split
@@ -41,6 +42,7 @@ fromFile path =
                             & (fmap adjacencyMatrixValid)
                             & runMaybeT
                             & (\x -> fromMaybe <$> pure False <*> x)
+
             string          = fmap init $ readFile path
             graph           = fmap stringToGraph string
         in graphValid >>= (\x -> if x then graph else return Nothing)
@@ -48,3 +50,27 @@ fromFile path =
 -- matrix exponent
 (***) :: Num a => Matrix a -> Int -> Matrix a
 matrix *** exponent = foldr1 multStd $ take exponent $ repeat matrix
+
+distanceMatrix :: Graph -> Graph
+distanceMatrix graph = distanceMatrix' graph distances 1
+        where distances = graph 
+                          & fmap (\x -> if x == 0 then -1 else x)
+                          & (\x -> elementwise (*) (fmap (\y -> if y == 1 then 0 else 1) 
+                                                                  $ identity 
+                                                                  $ nrows graph) 
+                                           x)
+
+distanceMatrix' :: Graph -> Graph -> Int -> Graph
+distanceMatrix' graph distances step =
+        let size       = nrows graph
+            graphPowN  = graph *** step
+            distances' = matrix size size
+                           (\(x, y) ->
+                             if
+                               getElem x y graphPowN /= 0 &&
+                               getElem x y distances == -1
+                             then
+                               step
+                             else
+                               getElem x y distances)
+        in  if step == size then distances else distanceMatrix' graph distances' (step + 1)
