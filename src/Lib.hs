@@ -5,6 +5,9 @@ module Lib
     , distanceMatrix
     , excentricitiesFromDistance
     , dfs
+    , bridges
+    , isBridge
+    , removeEdge
     , (***)
     ) where
 import Data.List.Split
@@ -81,15 +84,18 @@ distanceMatrix' graph distances step =
 excentricitiesFromDistance :: Matrix Int -> [Int]
 excentricitiesFromDistance distance = map maximum $ toLists distance
 
+removeEdge :: Graph -> (Int, Int) -> Graph
+removeEdge graph (vertexA, vertexB) = setElem 0 (vertexA + 1, vertexB + 1) 
+                                        $ setElem 0 (vertexB + 1, vertexA + 1) graph
+
 dfs' :: Graph -> Int -> [Int] -> S.Set Int
 dfs' graph startVertex discovered = 
         let adjacentVertices      = toLists graph !! startVertex
                                   & zip [0..]
                                   & filter (\(index, connection) -> connection==1)
                                   & map fst
-            removeEdge a b g      = setElem 0 (a + 1, b + 1) $ setElem 0 (b + 1, a + 1) g
             graphWithRemovedEdges :: Graph
-            graphWithRemovedEdges = foldr (\v g -> removeEdge v startVertex g) graph adjacentVertices
+            graphWithRemovedEdges = foldr (\v g -> removeEdge g (v, startVertex)) graph adjacentVertices
             flatten = foldr1 (++)
         in  if length adjacentVertices == 0 
                 then S.fromList discovered 
@@ -100,11 +106,12 @@ dfs graph startVertex = dfs' graph startVertex []
 
 isBridge ::  Graph -> (Int, Int) -> Bool
 isBridge graph (vertexA, vertexB) = 
-        vertexB `S.member` (dfs graph vertexA)
+        not $ vertexB `S.member` (dfs withRemovedEdge vertexA)
+          where withRemovedEdge = removeEdge graph (vertexA, vertexB)
 
 edges :: Graph -> [(Int, Int)]
-edges graph = [(x, y) | x <- [1..nrows graph], y <- [1..ncols graph]]
-            & filter (\(x, y) -> getElem x y graph == 1)
+edges graph = [(x, y) | x <- [1..nrows graph - 1], y <- [1..ncols graph - 1]]
+            & filter (\(x, y) -> getElem (x + 1) (y + 1) graph == 1)
 
 bridges :: Graph -> [(Int, Int)]
 bridges graph = edges graph 
