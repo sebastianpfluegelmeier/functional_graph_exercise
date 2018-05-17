@@ -35,7 +35,8 @@ library
       base >=4.7 && <5,
       split,
       transformers,
-      matrix
+      matrix,
+      containers
 
   default-language: Haskell2010
 

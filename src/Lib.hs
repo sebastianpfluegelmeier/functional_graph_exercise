@@ -3,12 +3,15 @@ module Lib
     , fromFile
     , fromString
     , distanceMatrix
+    , excentricitiesFromDistance
+    , dfs
     , (***)
     ) where
 import Data.List.Split
 import Data.Matrix
 import Data.Function
 import Data.Maybe
+import qualified Data.Set as S
 import Control.Monad.Trans.Maybe
 
 type Graph = Matrix Int
@@ -74,3 +77,20 @@ distanceMatrix' graph distances step =
                              else
                                getElem x y distances)
         in  if step == size then distances else distanceMatrix' graph distances' (step + 1)
+
+excentricitiesFromDistance :: Matrix Int -> [Int]
+excentricitiesFromDistance distance = map maximum $ toLists distance
+
+dfs :: Graph -> Int -> [Int] -> S.Set Int
+dfs graph startVertex discovered = 
+        let adjacentVertices      = toLists graph !! startVertex
+                                  & zip [0..]
+                                  & filter (\(index, connection) -> connection==1)
+                                  & map fst
+            removeEdge a b g      = setElem 0 (a + 1, b + 1) $ setElem 0 (b + 1, a + 1) g
+            graphWithRemovedEdges :: Graph
+            graphWithRemovedEdges = foldr (\v g -> removeEdge v startVertex g) graph adjacentVertices
+            flatten = foldr1 (++)
+        in  if length adjacentVertices == 0 
+                then S.fromList discovered 
+                else S.fromList (startVertex : discovered ++ (flatten $ map (\x -> S.toList (dfs graphWithRemovedEdges x (adjacentVertices++discovered))) adjacentVertices))
