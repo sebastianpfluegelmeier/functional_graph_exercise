@@ -81,8 +81,8 @@ distanceMatrix' graph distances step =
 excentricitiesFromDistance :: Matrix Int -> [Int]
 excentricitiesFromDistance distance = map maximum $ toLists distance
 
-dfs :: Graph -> Int -> [Int] -> S.Set Int
-dfs graph startVertex discovered = 
+dfs' :: Graph -> Int -> [Int] -> S.Set Int
+dfs' graph startVertex discovered = 
         let adjacentVertices      = toLists graph !! startVertex
                                   & zip [0..]
                                   & filter (\(index, connection) -> connection==1)
@@ -93,4 +93,19 @@ dfs graph startVertex discovered =
             flatten = foldr1 (++)
         in  if length adjacentVertices == 0 
                 then S.fromList discovered 
-                else S.fromList (startVertex : discovered ++ (flatten $ map (\x -> S.toList (dfs graphWithRemovedEdges x (adjacentVertices++discovered))) adjacentVertices))
+                else S.fromList (startVertex : discovered ++ (flatten $ map (\x -> S.toList (dfs' graphWithRemovedEdges x (adjacentVertices++discovered))) adjacentVertices))
+
+dfs :: Graph -> Int -> S.Set Int
+dfs graph startVertex = dfs' graph startVertex []
+
+isBridge ::  Graph -> (Int, Int) -> Bool
+isBridge graph (vertexA, vertexB) = 
+        vertexB `S.member` (dfs graph vertexA)
+
+edges :: Graph -> [(Int, Int)]
+edges graph = [(x, y) | x <- [1..nrows graph], y <- [1..ncols graph]]
+            & filter (\(x, y) -> getElem x y graph == 1)
+
+bridges :: Graph -> [(Int, Int)]
+bridges graph = edges graph 
+              & filter (isBridge graph)
