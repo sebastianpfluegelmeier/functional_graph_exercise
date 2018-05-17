@@ -69,6 +69,7 @@ extra-lib-dirs:
 - transformers-0.5.5.0
 - matrix-0.3.6.1
 - containers-0.5.11.0
+- random-1.1
 
 #
 # Allow a newer minor version of GHC than the snapshot specifies

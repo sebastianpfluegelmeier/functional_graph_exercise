@@ -36,7 +36,8 @@ library
       split,
       transformers,
       matrix,
-      containers
+      containers,
+      random
 
   default-language: Haskell2010
 

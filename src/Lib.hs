@@ -1,14 +1,10 @@
 module Lib
-    ( Graph
-    , fromFile
-    , fromString
+    ( fromFile
     , distanceMatrix
-    , excentricitiesFromDistance
-    , dfs
+    , eccentricitiesFromDistance
     , bridges
-    , isBridge
-    , removeEdge
-    , (***)
+    , articulations
+    , components
     ) where
 import Data.List.Split
 import Data.Matrix
@@ -16,6 +12,7 @@ import Data.Function
 import Data.Maybe
 import qualified Data.Set as S
 import Control.Monad.Trans.Maybe
+import System.Random
 
 type Graph = Matrix Int
 
@@ -81,8 +78,8 @@ distanceMatrix' graph distances step =
                                getElem x y distances)
         in  if step == size then distances else distanceMatrix' graph distances' (step + 1)
 
-excentricitiesFromDistance :: Matrix Int -> [Int]
-excentricitiesFromDistance distance = map maximum $ toLists distance
+eccentricitiesFromDistance :: Matrix Int -> [Int]
+eccentricitiesFromDistance distance = map maximum $ toLists distance
 
 removeEdge :: Graph -> (Int, Int) -> Graph
 removeEdge graph (vertexA, vertexB) = setElem 0 (vertexA + 1, vertexB + 1) 
@@ -90,19 +87,22 @@ removeEdge graph (vertexA, vertexB) = setElem 0 (vertexA + 1, vertexB + 1)
 
 dfs' :: Graph -> Int -> [Int] -> S.Set Int
 dfs' graph startVertex discovered = 
-        let adjacentVertices      = toLists graph !! startVertex
-                                  & zip [0..]
-                                  & filter (\(index, connection) -> connection==1)
-                                  & map fst
+        let adjacent              = adjacentVertices graph startVertex
             graphWithRemovedEdges :: Graph
-            graphWithRemovedEdges = foldr (\v g -> removeEdge g (v, startVertex)) graph adjacentVertices
+            graphWithRemovedEdges = foldr (\v g -> removeEdge g (v, startVertex)) graph adjacent
             flatten = foldr1 (++)
-        in  if length adjacentVertices == 0 
+        in  if length adjacent == 0 
                 then S.fromList discovered 
-                else S.fromList (startVertex : discovered ++ (flatten $ map (\x -> S.toList (dfs' graphWithRemovedEdges x (adjacentVertices++discovered))) adjacentVertices))
+                else S.fromList (startVertex : discovered ++ (flatten $ map (\x -> S.toList (dfs' graphWithRemovedEdges x (adjacent++discovered))) adjacent))
 
 dfs :: Graph -> Int -> S.Set Int
 dfs graph startVertex = dfs' graph startVertex []
+
+adjacentVertices :: Graph -> Int -> [Int]
+adjacentVertices graph vertex = toLists graph !! vertex
+                              & zip [0..]
+                              & filter (\(index, connection) -> connection == 1)
+                              & map fst
 
 isBridge ::  Graph -> (Int, Int) -> Bool
 isBridge graph (vertexA, vertexB) = 
@@ -116,3 +116,36 @@ edges graph = [(x, y) | x <- [1..nrows graph - 1], y <- [1..ncols graph - 1]]
 bridges :: Graph -> [(Int, Int)]
 bridges graph = edges graph 
               & filter (isBridge graph)
+
+removeAdjacentEdges :: Graph -> Int -> Graph
+removeAdjacentEdges graph vertex = adjacentVertices graph vertex
+                                 & foldr (\v g -> removeEdge g (vertex, v)) graph 
+
+adjacentEdges :: Graph -> Int -> [(Int, Int)]
+adjacentEdges graph vertex = adjacentVertices graph vertex `zip` repeat vertex
+
+isArticulation :: Graph -> Int -> Bool
+isArticulation graph vertex
+        | (length adjacent) < 2 = False
+        | otherwise =  all (\x -> not $ S.member x dfsFromFirst) rest
+            where adjacent        = adjacentVertices graph vertex
+                  (first:rest)    = adjacent
+                  withoutAdjacent = removeAdjacentEdges graph vertex
+                  dfsFromFirst    = dfs withoutAdjacent first
+
+articulations ::  Graph -> [Int]
+articulations graph = [0..nrows graph - 1]
+                    & filter (isArticulation graph)
+
+components :: Graph -> [S.Set Int]
+components graph = components' graph S.empty
+
+components' :: Graph -> S.Set Int -> [S.Set Int]
+components' graph alreadyFound = if S.null notFound 
+                                     then [] 
+                                     else thisComponent:
+                                          (components' graph $ 
+                                            S.union alreadyFound thisComponent)
+        where notFound      = S.fromList [0..nrows graph - 1] S.\\ alreadyFound  
+              startVal      = S.findMin notFound
+              thisComponent = dfs graph startVal
