@@ -5,6 +5,7 @@ module Lib
     , bridges
     , articulations
     , components
+    , dfs
     ) where
 import Data.List.Split
 import Data.Matrix
@@ -96,7 +97,7 @@ dfs' graph startVertex discovered =
                 else S.fromList (startVertex : discovered ++ (flatten $ map (\x -> S.toList (dfs' graphWithRemovedEdges x (adjacent++discovered))) adjacent))
 
 dfs :: Graph -> Int -> S.Set Int
-dfs graph startVertex = dfs' graph startVertex []
+dfs graph startVertex = dfs' graph startVertex [startVertex]
 
 adjacentVertices :: Graph -> Int -> [Int]
 adjacentVertices graph vertex = toLists graph !! vertex
