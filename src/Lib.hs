@@ -11,7 +11,7 @@ module Lib
     , components
     ) where
 import Data.List.Split
-import Data.Matrix (Matrix, getElem, elementwise, ncols, nrows, toLists, setElem, matrix, multStd, fromLists, identity)
+import Matrix 
 import Data.Function
 import Data.Maybe
 import qualified Data.Set as S
