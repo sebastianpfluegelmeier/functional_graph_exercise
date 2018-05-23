@@ -157,7 +157,7 @@ edges :: Graph -> [Edge]
 edges graph = [(x, y) | x <- [1..nrows graph - 1], y <- [1..ncols graph - 1]]
             & filter (\(x, y) -> getElem (x + 1) (y + 1) graph == 1)
 
--- Returns all Bridges of a given 'Graph'
+-- |Returns all bridges of a given 'Graph'
 bridges :: Graph -> [Edge]
 bridges graph = edges graph 
               & filter (isBridge graph)
@@ -184,12 +184,12 @@ isArticulation graph vertex
                   withoutAdjacent = removeAdjacentEdges graph vertex
                   dfsFromFirst    = dfs withoutAdjacent first
 
--- returns a 'List' of all articulations of a 'Graph'
+-- |returns a 'List' of all articulations of a 'Graph'
 articulations ::  Graph -> [Vertex]
 articulations graph = [0..nrows graph - 1]
                     & filter (isArticulation graph)
 
--- returns a list of all components of a 'Graph' where a component is
+-- |returns a list of all components of a 'Graph' where a component is
 -- represented as a list of Sets of Vertices
 components :: Graph -> [S.Set Vertex]
 components graph = components' graph S.empty
