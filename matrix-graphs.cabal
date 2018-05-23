@@ -27,6 +27,7 @@ source-repository head
 library
   exposed-modules:
       Lib
+    , Matrix
   other-modules:
       Paths_matrix_graphs
   hs-source-dirs:
