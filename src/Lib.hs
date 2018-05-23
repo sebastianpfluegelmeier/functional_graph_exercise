@@ -152,12 +152,12 @@ isBridge graph (vertexA, vertexB) =
         not $ vertexB `S.member` (dfs withRemovedEdge vertexA)
           where withRemovedEdge = removeEdge graph (vertexA, vertexB)
 
--- Returns all 'Edge's of a given 'Graph'
+-- returns all 'Edge's of a given 'Graph'
 edges :: Graph -> [Edge]
 edges graph = [(x, y) | x <- [1..nrows graph - 1], y <- [1..ncols graph - 1]]
             & filter (\(x, y) -> getElem (x + 1) (y + 1) graph == 1)
 
--- |Returns all bridges of a given 'Graph'
+-- |returns all bridges of a given 'Graph'
 bridges :: Graph -> [Edge]
 bridges graph = edges graph 
               & filter (isBridge graph)
