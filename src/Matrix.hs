@@ -23,6 +23,9 @@ data Matrix a = Matrix { mmap  :: Map Key a
                        }
 
 
+-- ************ THERE IS A BUG SOMEWHERE HERE ************
+-- if you use Data.Matrix, the program behaves correctly
+-- if you use this module, it does not behave correctly 
 instance Functor Matrix where
         fmap f m = m {mmap = Prelude.fmap f (mmap m)}
 
