@@ -1,10 +1,10 @@
 module Main where
+import Matrix
 import Lib
 import System.Environment
 import Data.Maybe
 import qualified Data.Set as S
 import Data.Function
-import Matrix
 
 main :: IO ()
 main = do

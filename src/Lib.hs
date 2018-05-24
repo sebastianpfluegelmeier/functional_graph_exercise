@@ -10,8 +10,8 @@ module Lib
     , articulations
     , components
     ) where
-import Data.List.Split
 import Matrix 
+import Data.List.Split
 import Data.Function
 import Data.Maybe
 import qualified Data.Set as S
@@ -130,7 +130,6 @@ dfs graph startVertex = dfs' graph startVertex [startVertex]
 dfs' :: Graph -> Vertex -> [Vertex] -> S.Set Vertex
 dfs' graph startVertex discovered = 
         let adjacent              = adjacentVertices graph startVertex
-            graphWithRemovedEdges :: Graph
             graphWithRemovedEdges = foldr (\v g -> removeEdge g (v, startVertex)) graph adjacent
             flatten = foldr1 (++)
         in  if length adjacent == 0 

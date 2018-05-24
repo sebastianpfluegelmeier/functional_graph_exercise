@@ -17,39 +17,45 @@ import Data.Function
 
 type Key = (Int, Int)
 
-type Matrix a = Map Key a
+data Matrix a = Matrix { mmap  :: Map Key a
+                       , ncols :: Int
+                       , nrows :: Int
+                       }
+
+
+instance Functor Matrix where
+        fmap f m = m {mmap = Prelude.fmap f (mmap m)}
+
+instance Foldable Matrix where 
+        foldr f s c = Prelude.foldr f s (mmap c)
 
 getElem :: Int -> Int -> Matrix a -> a
-getElem x y matrix = matrix ! (x, y)
+getElem x y matrix = mmap matrix ! (x, y)
 
 elementwise :: (a -> b -> c) -> Matrix a -> Matrix b -> Matrix c 
 elementwise operation matrixA matrixB = 
-        let keys = toList matrixA & fmap fst
-        in  fmap (\(x, y) -> let 
+        let keys = toList (mmap matrixA) & fmap fst
+        in  matrixA { mmap = fmap (\(x, y) -> let 
                                  valA      = getElem x y matrixA
                                  valB      = getElem x y matrixB
                                  valResult = operation valA valB
                                  key       = (x, y)
-                             in  (key, valResult)
-                 ) 
-                keys
-            & fromList
+                             in  (key, valResult)) 
+                             keys
+                             & fromList }
 
 setElem :: a -> Key -> Matrix a -> Matrix a
 setElem val key matrix = 
-        insert key val matrix
-
-ncols :: Matrix a -> Int
-ncols matrix = toList matrix & fmap (\((x, _), _) -> x) & maximum
-
-nrows :: Matrix a -> Int
-nrows matrix = toList matrix & fmap (\((_, y), _) -> y) & maximum
+        matrix {mmap = insert key val (mmap matrix)}
 
 identity :: Int -> Matrix Int
 identity size = matrix size size (\(x, y) -> if x == y then 1 else 0)
 
 matrix :: Int -> Int -> ((Int, Int) -> a) -> Matrix a
-matrix rows columns fn = fromList [((x, y), fn (x, y)) | x <- [1..rows], y <- [1..columns]]
+matrix rows columns fn = Matrix { mmap = fromList [((x, y), fn (x, y)) | x <- [1..rows], y <- [1..columns]]
+                                , nrows = rows
+                                , ncols = columns
+                                }
 
 fromLists :: [[a]] -> Matrix a
 fromLists lists = matrix (length lists) ((length $ lists !! 0)) (\(x, y) -> lists !! (x - 1) !! (y - 1))
