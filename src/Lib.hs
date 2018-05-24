@@ -9,6 +9,7 @@ module Lib
     , bridges
     , articulations
     , components
+    , dfs
     ) where
 import Matrix 
 import Data.List.Split
@@ -124,17 +125,20 @@ removeEdge graph (vertexA, vertexB) = setElem 0 (vertexA + 1, vertexB + 1)
 -- takes a 'Graph' and a start 'Vertex', return a Set of 'Vertex's
 -- containing all found Vertices in a depth first search.
 dfs :: Graph -> Vertex -> S.Set Vertex
-dfs graph startVertex = dfs' graph startVertex [startVertex]
+dfs graph startVertex = dfs' graph startVertex (S.singleton startVertex)
 
 -- helper function for the 'dfs' function
-dfs' :: Graph -> Vertex -> [Vertex] -> S.Set Vertex
+dfs' :: Graph -> Vertex -> S.Set Vertex -> S.Set Vertex
 dfs' graph startVertex discovered = 
-        let adjacent              = adjacentVertices graph startVertex
-            graphWithRemovedEdges = foldr (\v g -> removeEdge g (v, startVertex)) graph adjacent
-            flatten = foldr1 (++)
-        in  if length adjacent == 0 
-                then S.fromList discovered 
-                else S.fromList (startVertex : discovered ++ (flatten $ map (\x -> S.toList (dfs' graphWithRemovedEdges x (adjacent++discovered))) adjacent))
+        let discoveredNew  = (S.fromList $ adjacentVertices graph startVertex) `S.union` discovered
+            nextVertex     = S.findMin discoveredNew
+            discNewWithout = S.deleteMin discoveredNew
+            graphWithout   = removeEdge graph (startVertex, nextVertex)
+        in  if S.size discNewWithout == 0 
+                then discoveredNew 
+                else discoveredNew `S.union` dfs' graphWithout nextVertex discNewWithout
+
+
 
 -- takes a 'Graph' and a 'Vertex' and returns a 'List' of adjacent
 -- 'Vertex's
