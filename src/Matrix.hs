@@ -23,9 +23,6 @@ data Matrix a = Matrix { mmap  :: Map Key a
                        }
 
 
--- ************ THERE IS A BUG SOMEWHERE HERE ************
--- if you use Data.Matrix, the program behaves correctly
--- if you use this module, it does not behave correctly 
 instance Functor Matrix where
         fmap f m = m {mmap = Prelude.fmap f (mmap m)}
 
@@ -73,7 +70,7 @@ multStd :: Num a => Matrix a -> Matrix a -> Matrix a
 multStd matrixA matrixB = matrix (nrows matrixA)
                                  (ncols matrixB)
                                  (\(x, y) -> 
-                                    fmap (\i -> getElem x i matrixA + getElem i y matrixB) 
+                                    fmap (\i -> getElem i y matrixA * getElem x i matrixB) 
                                          [1..nrows matrixA] 
                                     & sum
                                  )

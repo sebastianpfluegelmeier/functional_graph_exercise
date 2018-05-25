@@ -120,24 +120,26 @@ eccentricitiesFromDistance distance = map maximum $ toLists distance
 -- take a 'Graph' and an 'Edge', return a Graph without the given Edge
 removeEdge :: Graph -> Edge -> Graph
 removeEdge graph (vertexA, vertexB) = setElem 0 (vertexA + 1, vertexB + 1) 
-                                        $ setElem 0 (vertexB + 1, vertexA + 1) graph
+                                    $ setElem 0 (vertexB + 1, vertexA + 1) graph
 
 -- takes a 'Graph' and a start 'Vertex', return a Set of 'Vertex's
 -- containing all found Vertices in a depth first search.
 dfs :: Graph -> Vertex -> S.Set Vertex
-dfs graph startVertex = dfs' graph startVertex (S.singleton startVertex)
+dfs graph startVertex = dfs' graph $ S.singleton startVertex
 
--- helper function for the 'dfs' function
-dfs' :: Graph -> Vertex -> S.Set Vertex -> S.Set Vertex
-dfs' graph startVertex discovered = 
-        let discoveredNew  = (S.fromList $ adjacentVertices graph startVertex) `S.union` discovered
-            nextVertex     = S.findMin discoveredNew
-            discNewWithout = S.deleteMin discoveredNew
-            graphWithout   = removeEdge graph (startVertex, nextVertex)
-        in  if S.size discNewWithout == 0 
-                then discoveredNew 
-                else discoveredNew `S.union` dfs' graphWithout nextVertex discNewWithout
+dfs' :: Graph -> S.Set Vertex -> S.Set Vertex
+dfs' graph startVertices = 
+        if S.null startVertices 
+            then S.empty
+            else startVertices `S.union` (dfs' graphWithoutStartVertices adjacentStartVertices')
+        where graphWithoutStartVertices = foldr (flip removeEdge) graph adjacentStartEdges'
 
+              adjacentStartEdges    :: S.Set (S.Set Edge)
+              adjacentStartEdges        = S.map (S.fromList.(adjacentEdges graph)) startVertices
+              adjacentStartVertices :: S.Set (S.Set Vertex)
+              adjacentStartVertices     = S.map (S.fromList.(adjacentVertices graph)) startVertices
+              adjacentStartEdges'       = adjacentStartEdges & S.toList & S.unions
+              adjacentStartVertices'    = adjacentStartVertices & S.toList & S.unions
 
 
 -- takes a 'Graph' and a 'Vertex' and returns a 'List' of adjacent
@@ -147,6 +149,11 @@ adjacentVertices graph vertex = toLists graph !! vertex
                               & zip [0..]
                               & filter (\(index, connection) -> connection == 1)
                               & map fst
+
+-- Takes a 'Graph' and a 'Vertex' and return all Edges, adjacent to the
+-- Vertex
+adjacentEdges :: Graph -> Vertex -> [Edge]
+adjacentEdges graph vertex = adjacentVertices graph vertex `zip` repeat vertex
 
 -- Takes a 'Graph' and a 'Edge' and returns 'True' if the Edges is
 -- a Bridge.
@@ -171,10 +178,6 @@ removeAdjacentEdges :: Graph -> Vertex -> Graph
 removeAdjacentEdges graph vertex = adjacentVertices graph vertex
                                  & foldr (\v g -> removeEdge g (vertex, v)) graph 
 
--- Takes a 'Graph' and a 'Vertex' and return all Edges, adjacent to the
--- Vertex
-adjacentEdges :: Graph -> Vertex -> [Edge]
-adjacentEdges graph vertex = adjacentVertices graph vertex `zip` repeat vertex
 
 -- Takes a 'Graph' and a 'Vertex' and return True if the Vertex is an
 -- articulation.
