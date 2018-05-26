@@ -122,24 +122,23 @@ removeEdge :: Graph -> Edge -> Graph
 removeEdge graph (vertexA, vertexB) = setElem 0 (vertexA + 1, vertexB + 1) 
                                     $ setElem 0 (vertexB + 1, vertexA + 1) graph
 
--- takes a 'Graph' and a start 'Vertex', return a Set of 'Vertex's
+-- takes a 'Graph' and a Set of start 'Vertex's, return a Set of 'Vertex's
 -- containing all found Vertices in a depth first search.
-dfs :: Graph -> Vertex -> S.Set Vertex
-dfs graph startVertex = dfs' graph $ S.singleton startVertex
-
-dfs' :: Graph -> S.Set Vertex -> S.Set Vertex
-dfs' graph startVertices = 
+dfs :: Graph -> S.Set Vertex -> S.Set Vertex
+dfs graph startVertices = 
         if S.null startVertices 
             then S.empty
-            else startVertices `S.union` (dfs' graphWithoutStartVertices adjacentStartVertices')
-        where graphWithoutStartVertices = foldr (flip removeEdge) graph adjacentStartEdges'
+            else startVertices `S.union` (dfs graphWithoutStartVertices adjacentStartVertices)
+        where graphWithoutStartVertices = foldr (flip removeEdge) graph adjacentStartEdges
 
-              adjacentStartEdges    :: S.Set (S.Set Edge)
-              adjacentStartEdges        = S.map (S.fromList.(adjacentEdges graph)) startVertices
-              adjacentStartVertices :: S.Set (S.Set Vertex)
-              adjacentStartVertices     = S.map (S.fromList.(adjacentVertices graph)) startVertices
-              adjacentStartEdges'       = adjacentStartEdges & S.toList & S.unions
-              adjacentStartVertices'    = adjacentStartVertices & S.toList & S.unions
+              adjacentStartEdges        = S.map (S.fromList.(adjacentEdges graph)) 
+                                                startVertices
+                                          & S.toList
+                                          & S.unions
+              adjacentStartVertices     = S.map (S.fromList.(adjacentVertices graph)) 
+                                                startVertices
+                                          & S.toList
+                                          & S.unions
 
 
 -- takes a 'Graph' and a 'Vertex' and returns a 'List' of adjacent
@@ -159,7 +158,7 @@ adjacentEdges graph vertex = adjacentVertices graph vertex `zip` repeat vertex
 -- a Bridge.
 isBridge ::  Graph -> Edge -> Bool
 isBridge graph (vertexA, vertexB) = 
-        not $ vertexB `S.member` (dfs withRemovedEdge vertexA)
+        not $ vertexB `S.member` (dfs withRemovedEdge (S.singleton vertexA))
           where withRemovedEdge = removeEdge graph (vertexA, vertexB)
 
 -- returns all 'Edge's of a given 'Graph'
@@ -188,7 +187,7 @@ isArticulation graph vertex
             where adjacent        = adjacentVertices graph vertex
                   (first:rest)    = adjacent
                   withoutAdjacent = removeAdjacentEdges graph vertex
-                  dfsFromFirst    = dfs withoutAdjacent first
+                  dfsFromFirst    = dfs withoutAdjacent (S.singleton first)
 
 -- |returns a 'List' of all articulations of a 'Graph'
 articulations ::  Graph -> [Vertex]
@@ -209,4 +208,4 @@ components' graph alreadyFound = if S.null notFound
                                             S.union alreadyFound thisComponent)
         where notFound      = S.fromList [0..nrows graph - 1] S.\\ alreadyFound  
               startVal      = S.findMin notFound
-              thisComponent = dfs graph startVal
+              thisComponent = dfs graph (S.singleton startVal)
