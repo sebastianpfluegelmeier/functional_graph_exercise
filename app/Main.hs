@@ -25,6 +25,8 @@ main = do
                 putStrLn $ matrixToAsciiString $ distance
                 putStrLn "eccentricities:"
                 putStrLn $ show $ Lib.eccentricitiesFromDistance distance
+                putStrLn "spanningTree:"
+                putStrLn $ show $ Lib.spanningTree graph 0
             else do putStrLn "Error: invalid input"
 
 matrixToAsciiString :: Matrix Int -> String

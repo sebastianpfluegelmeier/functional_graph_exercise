@@ -10,6 +10,7 @@ module Lib
     , articulations
     , components
     , dfs
+    , spanningTree
     ) where
 import Matrix 
 import Data.List.Split
@@ -28,6 +29,25 @@ type Vertex = Int
 
 -- |'Edge' represents a Edge in a graph
 type Edge = (Vertex, Vertex)
+
+-- |Tree type for representing spanning Trees
+data Tree = Tree Vertex (S.Set Tree) deriving (Eq, Show)
+
+instance Ord Tree where
+        compare (Tree a _) (Tree b _) = compare a b
+
+
+-- constructs a 'Tree' with only one 'Vertex'
+singletonTree :: Vertex -> Tree
+singletonTree vertex = Tree vertex S.empty
+
+-- take two 'Tree's and append the second one to the root Node of the first
+-- one.
+appendToTree :: Tree -> Tree -> Tree
+appendToTree (Tree vertex branches) treeToAppend = Tree vertex (S.insert treeToAppend branches)
+
+treeToSet :: Tree -> S.Set Int
+treeToSet (Tree vertex set) = S.map treeToSet set & S.toList & (S.singleton vertex:) & S.unions
 
 -- |'adjacencyMatrixValid' takes a Matrix of Ints returns true if the
 -- Matrix follows this criteria:
@@ -173,10 +193,9 @@ bridges graph = edges graph
 
 -- Takes a 'Graph' and a 'Vertex' and returns the given Graph where all
 -- Edges adjacent to the given Vertex are removed
-removeAdjacentEdges :: Graph -> Vertex -> Graph
-removeAdjacentEdges graph vertex = adjacentVertices graph vertex
+removeIncidentEdges :: Graph -> Vertex -> Graph
+removeIncidentEdges graph vertex = adjacentVertices graph vertex
                                  & foldr (\v g -> removeEdge g (vertex, v)) graph 
-
 
 -- Takes a 'Graph' and a 'Vertex' and return True if the Vertex is an
 -- articulation.
@@ -186,7 +205,7 @@ isArticulation graph vertex
         | otherwise =  all (\x -> not $ S.member x dfsFromFirst) rest
             where adjacent        = adjacentVertices graph vertex
                   (first:rest)    = adjacent
-                  withoutAdjacent = removeAdjacentEdges graph vertex
+                  withoutAdjacent = removeIncidentEdges graph vertex
                   dfsFromFirst    = dfs withoutAdjacent (S.singleton first)
 
 -- |returns a 'List' of all articulations of a 'Graph'
@@ -201,11 +220,26 @@ components graph = components' graph S.empty
 
 -- helper function for components
 components' :: Graph -> S.Set Vertex -> [S.Set Vertex]
-components' graph alreadyFound = if S.null notFound 
-                                     then [] 
-                                     else thisComponent:
-                                          (components' graph $ 
-                                            S.union alreadyFound thisComponent)
-        where notFound      = S.fromList [0..nrows graph - 1] S.\\ alreadyFound  
-              startVal      = S.findMin notFound
-              thisComponent = dfs graph (S.singleton startVal)
+components' graph alreadyFound = 
+        if S.null notFound 
+          then [] 
+          else thisComponent:
+               (components' graph $ 
+                 S.union alreadyFound thisComponent)
+            where notFound      = S.fromList [0..nrows graph - 1] S.\\ alreadyFound  
+                  startVal      = S.findMin notFound
+                  thisComponent = dfs graph (S.singleton startVal)
+
+spanningTree :: Graph -> Vertex -> Tree
+spanningTree graph startVertex = 
+        let adjacent = adjacentVertices graph startVertex
+        in  foldr (\vertex (graph, tree) ->
+                       let subTree       = spanningTree graph vertex
+                           newTree       = appendToTree tree subTree
+                           foundVertices = treeToSet subTree
+                           graphWithout  = foldl removeIncidentEdges graph foundVertices
+                       in (graphWithout, newTree)
+                  )
+                  (graph, singletonTree startVertex)
+                  adjacent
+            & snd
