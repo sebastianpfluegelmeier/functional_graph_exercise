@@ -18,15 +18,16 @@ main = do
                 putStrLn "bridges:"
                 putStrLn $ show $ Lib.bridges graph
                 putStrLn "components:"
-                let componentsList = map S.toList $ Lib.components graph
+                let componentsSet = Lib.components graph
+                let componentsList = map S.toList componentsSet
                 putStrLn $ show $ componentsList
                 let distance = Lib.distanceMatrix graph
                 putStrLn "distance matrix:"
                 putStrLn $ matrixToAsciiString $ distance
                 putStrLn "eccentricities:"
                 putStrLn $ show $ Lib.eccentricitiesFromDistance distance
-                putStrLn "spanningTree:"
-                putStrLn $ show $ Lib.spanningTree graph 0
+                putStrLn "spanning forest:"
+                putStrLn $ spanningForestToString $ Lib.spanningForestFromComponents graph componentsSet
             else do putStrLn "Error: invalid input"
 
 matrixToAsciiString :: Matrix Int -> String

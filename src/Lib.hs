@@ -10,7 +10,8 @@ module Lib
     , articulations
     , components
     , dfs
-    , spanningTree
+    , spanningForestFromComponents
+    , spanningForestToString
     ) where
 import Matrix 
 import Data.List.Split
@@ -19,6 +20,7 @@ import Data.Maybe
 import qualified Data.Set as S
 import Control.Monad.Trans.Maybe
 import System.Random
+import Debug.Trace
 
 -- |'Graph' is the main Datatype for this Module.
 -- Its simply a Matrix of 'Int's where each entry should bei @1@ or @0@
@@ -231,15 +233,49 @@ components' graph alreadyFound =
                   thisComponent = dfs graph (S.singleton startVal)
 
 spanningTree :: Graph -> Vertex -> Tree
-spanningTree graph startVertex = 
-        let adjacent = adjacentVertices graph startVertex
+spanningTree graph startVertex =
+        let adjacent                = adjacentVertices graph startVertex
+            graphWithoutStartVertex = removeIncidentEdges graph startVertex
         in  foldr (\vertex (graph, tree) ->
                        let subTree       = spanningTree graph vertex
                            newTree       = appendToTree tree subTree
                            foundVertices = treeToSet subTree
                            graphWithout  = foldl removeIncidentEdges graph foundVertices
-                       in (graphWithout, newTree)
+                       in  if vertex `S.member` (treeToSet tree)
+                              then (graph, tree)
+                              else (graphWithout, newTree)
                   )
-                  (graph, singletonTree startVertex)
+                  (graphWithoutStartVertex, singletonTree startVertex)
                   adjacent
             & snd
+
+
+spanningForestFromComponents :: Graph -> [S.Set Vertex] -> [Tree]
+spanningForestFromComponents graph components = 
+        map (\x -> spanningTree graph $ S.findMin x) components
+
+spanningForestToString :: [Tree] -> String
+spanningForestToString trees = map spanningTreeToString trees & foldr1 (\x y -> x ++ "\n" ++ y)
+
+spanningTreeToString :: Tree -> String
+spanningTreeToString tree = spanningTreeToString' 0 tree
+
+spanningTreeToString' :: Int -> Tree -> String
+spanningTreeToString' indent (Tree vertex set) = 
+           indentSpaces
+        ++ show vertex 
+        ++ setString
+          where indentSpaces = if indent > 0 
+                                 then foldr1 (++) $ take indent (repeat "   ")
+                                 else ""
+                setString    = if S.null set 
+                                 then ""
+                                 else "\n" ++ (foldr1 (\x y -> x++"\n"++y) $ 
+                                   S.map (spanningTreeToString' (indent + 1)) set)
+
+matrixToAsciiString :: Matrix Int -> String
+matrixToAsciiString matrix = 
+        let listList = toLists matrix
+            listToString list = map show list
+                              & foldr1 (\x y -> x ++ ";" ++ y) 
+        in  foldr1 (\x y -> x ++ "\n" ++ y) $ map listToString listList
