@@ -66,14 +66,22 @@ identity size = matrix size size (\(x, y) -> if x == y then 1 else 0)
 -- |takes rows, columns and a constructor function and turns it into
 -- a matrix.
 matrix :: Int -> Int -> ((Int, Int) -> a) -> Matrix a
-matrix rows columns fn = Matrix { mmap = fromList [((x, y), fn (x, y)) | x <- [1..rows], y <- [1..columns]]
-                                , nrows = rows
-                                , ncols = columns
-                                }
+matrix rows columns fn = 
+                        -- generate list of all indices and call the
+                        -- passed constructor function on all elemnts
+                        -- then put the result into a tuple with the index
+                        -- and create a new map from this list
+        Matrix { mmap = fromList [((x, y), fn (x, y)) | x <- [1..rows], y <- [1..columns]]
+               , nrows = rows
+               , ncols = columns
+               }
 
 -- |constructs a 'Matrix' from a 'List' of 'List's
 fromLists :: [[a]] -> Matrix a
-fromLists lists = matrix (length lists) ((length $ lists !! 0)) (\(x, y) -> lists !! (x - 1) !! (y - 1))
+fromLists lists = 
+        matrix (length lists) --rows
+               ((length $ lists !! 0)) --columns
+               (\(x, y) -> lists !! (x - 1) !! (y - 1)) -- constructor function
 
 -- |turns a 'Matrix' into a 'List' of 'List's
 toLists :: Matrix a -> [[a]]
@@ -87,7 +95,11 @@ multStd :: Num a => Matrix a -> Matrix a -> Matrix a
 multStd matrixA matrixB = matrix (nrows matrixA)
                                  (ncols matrixB)
                                  (\(x, y) -> 
+                                         -- multiply each element from
+                                         -- a row with each element of
+                                         -- a column
                                     fmap (\i -> getElem i y matrixA * getElem x i matrixB) 
                                          [1..nrows matrixA] 
+                                         -- and then sum the products
                                     & sum
                                  )
