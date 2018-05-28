@@ -4,11 +4,11 @@
 --
 -- hash: 9b236c4b60a2774afbf6573a1949c19f828c2b37ebb4daef7a9b345263655bdb
 
-name:           graph
+name:           matrix-graphs
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/graph#readme>
-homepage:       https://github.com/githubuser/graph#readme
-bug-reports:    https://github.com/githubuser/graph/issues
+description:    Please see the README on GitHub at <https://github.com/githubuser/matrix-graphs#readme>
+homepage:       https://github.com/githubuser/matrix-graphs#readme
+bug-reports:    https://github.com/githubuser/matrix-graphs/issues
 author:         Author name here
 maintainer:     example@example.com
 copyright:      2018 Author name here
@@ -22,14 +22,14 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/graph
+  location: https://github.com/githubuser/matrix-graphs
 
 library
   exposed-modules:
       Lib
     , Matrix
   other-modules:
-      Paths_graph
+      Paths_matrix_graphs
   hs-source-dirs:
       src
   build-depends:
@@ -41,29 +41,29 @@ library
     , random
   default-language: Haskell2010
 
-executable graph
+executable matrix-graphs-exe
   main-is: Main.hs
   other-modules:
-      Paths_graph
+      Paths_matrix_graphs
   hs-source-dirs:
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , graph
+    , matrix-graphs
     , containers
     , matrix
   default-language: Haskell2010
 
-test-suite graph
+test-suite matrix-graphs-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_graph
+      Paths_matrix_graphs
   hs-source-dirs:
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , graph
+    , matrix-graphs
   default-language: Haskell2010
