@@ -9,9 +9,12 @@ import Data.Function
 main :: IO ()
 main = do
         args <- getArgs
+        -- read Graph
         maybeGraph <- Lib.fromFile (args!!0)
         if isJust maybeGraph 
+            -- if maybeGraph is Some Graph there was no error parsing the file
             then do
+                -- get the Graph out of its Maybe
                 let graph = fromJust maybeGraph
                 putStrLn "articulations:"
                 putStrLn $ show $ Lib.articulations graph
@@ -26,8 +29,11 @@ main = do
                 putStrLn $ matrixToAsciiString $ distance
                 putStrLn "eccentricities:"
                 putStrLn $ show $ Lib.eccentricitiesFromDistance distance
-                putStrLn "spanning forest:"
-                putStrLn $ spanningForestToString $ Lib.spanningForestFromComponents graph componentsSet
+                if length args > 1 && args!!1 == "--showForest"
+                    then do
+                        putStrLn "spanning forest:"
+                        putStrLn $ spanningForestToString $ Lib.spanningForestFromComponents graph componentsSet
+            -- if maybeGraph is Nothing, there was an error parsing the file
             else do putStrLn "Error: invalid input"
 
 matrixToAsciiString :: Matrix Int -> String
