@@ -33,8 +33,10 @@ main = do
                     then do
                         putStrLn "spanning forest:"
                         putStrLn $ spanningForestToString $ Lib.spanningForestFromComponents graph componentsSet
+                    else return ()
             -- if maybeGraph is Nothing, there was an error parsing the file
-            else do putStrLn "Error: invalid input"
+            else do 
+                putStrLn "Error: invalid input"
 
 matrixToAsciiString :: Matrix Int -> String
 matrixToAsciiString matrix = 
