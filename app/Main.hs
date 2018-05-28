@@ -38,7 +38,12 @@ main = do
 
 matrixToAsciiString :: Matrix Int -> String
 matrixToAsciiString matrix = 
+            -- matrix turned into a [[Int]]
         let listList = toLists matrix
+            -- turn a list into a string by putting a semicolon between its elements
             listToString list = map show list
                               & foldr1 (\x y -> x ++ ";" ++ y) 
+            -- turn the list of lists into a a big string by applying
+            -- listToString to the inner lists and folding the outer list
+            -- by appending its elements while putting newlines between them
         in  foldr1 (\x y -> x ++ "\n" ++ y) $ map listToString listList
