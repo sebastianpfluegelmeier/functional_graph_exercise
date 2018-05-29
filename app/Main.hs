@@ -43,17 +43,7 @@ matrixToAsciiString matrix =
             -- matrix turned into a [[Int]]
         let listList = toLists matrix
             -- turn a list into a string by putting a semicolon between its elements
-<<<<<<< HEAD
-            listToString list = map show list
-                              -- replace "-1"s with "-"s
-                              & map (\x ->  
-                                      if x == "-1" 
-                                          then "-" 
-                                          else x
-                                     )
-=======
             listToString list = map (\x -> if x == -1 then "-" else show x) list
->>>>>>> 2e85d003bd272f819c13e8fd9b158d23bd848dd9
                               & foldr1 (\x y -> x ++ ";" ++ y) 
             -- turn the list of lists into a a big string by applying
             -- listToString to the inner lists and folding the outer list
