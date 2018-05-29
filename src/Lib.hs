@@ -245,7 +245,7 @@ isBridge graph (vertexA, vertexB) =
 edges :: Graph -> [Edge]
 edges graph = 
         -- list of all possible edges
-        [(x, y) | x <- [1..nrows graph - 1], y <- [1..ncols graph - 1]]
+        [(x, y) | x <- [0..nrows graph - 1], y <- [0..ncols graph - 1]]
         -- filter them by getting just the edges that are actually in the
         -- graph
       & filter (\(x, y) -> getElem (x + 1) (y + 1) graph == 1)
