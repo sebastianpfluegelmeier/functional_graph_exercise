@@ -137,7 +137,10 @@ distanceMatrix' graph distances step =
 -- a 'List' of 'Int' where the entry at position 0 is the eccentricity of
 -- vertex 0, the entry at position 1 is the eccentrcity of verte 1, ...
 eccentricitiesFromDistance :: Matrix Int -> [Int]
-eccentricitiesFromDistance distance = map maximum $ toLists distance
+eccentricitiesFromDistance distance = toLists distance
+                                    & map maximum
+                                    & zipWith (\x y -> if y == -1 then y else x)
+                                              (toLists distance & map minimum)
 
 -- take a 'Graph' and an 'Edge', return a Graph without the given Edge
 removeEdge :: Graph -> Edge -> Graph
@@ -191,6 +194,7 @@ edges graph = [(x, y) | x <- [1..nrows graph - 1], y <- [1..ncols graph - 1]]
 -- |returns all bridges of a given 'Graph'
 bridges :: Graph -> [Edge]
 bridges graph = edges graph 
+              & filter (\(x, y) -> x < y)
               & filter (isBridge graph)
 
 -- Takes a 'Graph' and a 'Vertex' and returns the given Graph where all
