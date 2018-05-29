@@ -31,7 +31,6 @@ library
       src
   build-depends:
       base >=4.7 && <5
-    , matrix
     , split
     , transformers
     , containers
@@ -49,7 +48,6 @@ executable matrix-graphs-exe
       base >=4.7 && <5
     , matrix-graphs
     , containers
-    , matrix
   default-language: Haskell2010
 
 test-suite matrix-graphs-test

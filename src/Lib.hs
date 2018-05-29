@@ -138,7 +138,7 @@ matrix *** exponent =
             take exponent $ repeat matrix 
 
 -- |'distanceMatrix' takes a 'Graph' and returns the distance Matrix of the
--- Graph
+-- Graph, in case of infinite distance, the value in the matrix is -1
 distanceMatrix :: Graph -> Matrix Int
 distanceMatrix graph = distanceMatrix' graph initial 1
         where initial = graph 
@@ -174,10 +174,12 @@ distanceMatrix' graph distances step =
 -- |'eccentricitiesFromDistance' takes a Distance Matrix and returns
 -- a 'List' of 'Int' where the entry at position 0 is the eccentricity of
 -- vertex 0, the entry at position 1 is the eccentrcity of verte 1, ...
+-- in case of infinite distance the value is -1
 eccentricitiesFromDistance :: Matrix Int -> [Int]
                                       -- take a list of distances and take
                                       -- the maximum
-eccentricitiesFromDistance distance = map maximum $ toLists distance
+eccentricitiesFromDistance distance = map (\x -> if minimum x == -1 then -1 else maximum x) 
+                                        $ toLists distance
 
 -- take a 'Graph' and an 'Edge', return a Graph without the given Edge
 removeEdge :: Graph -> Edge -> Graph

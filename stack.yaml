@@ -2,15 +2,9 @@ flags: {}
 extra-lib-dirs:
 - split-0.2.3.3
 - transformers-0.5.5.0
-- matrix-0.3.6.1
 - containers-0.5.11.0
 - random-1.1
 packages:
 - .
-extra-deps: 
-- split-0.2.3.3
-- transformers-0.5.5.0
-- matrix-0.3.6.1
-- containers-0.5.11.0
-- random-1.1
+extra-deps: []
 resolver: lts-11.9
