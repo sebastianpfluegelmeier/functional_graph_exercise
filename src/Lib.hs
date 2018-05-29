@@ -179,7 +179,7 @@ eccentricitiesFromDistance :: Matrix Int -> [Int]
                                       -- the maximum
 eccentricitiesFromDistance distance = toLists distance
                                     & map maximum
-                                    & zipWith (\x y -> if y == -1 then y else x)
+                                    & zipWith (\x y -> if x == -1 then x else y)
                                               (toLists distance & map minimum)
 
 -- take a 'Graph' and an 'Edge', return a Graph without the given Edge
