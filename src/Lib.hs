@@ -272,7 +272,7 @@ isArticulation graph vertex
         | (length adjacent) < 2 = False
         -- do a dfs from the first adjacent vertex, if all of the rest of
         -- the adjacent vertices aren't reachable, its an articulation
-        | otherwise =  all (\x -> not $ S.member x dfsFromFirst) rest
+        | otherwise =  any (\x -> not $ S.member x dfsFromFirst) rest
             where adjacent        = adjacentVertices graph vertex
                   (first:rest)    = adjacent
                   -- graph without adjacent edges
