@@ -38,7 +38,6 @@ data Tree = Tree Vertex (S.Set Tree) deriving (Eq, Show)
 instance Ord Tree where
         compare (Tree a _) (Tree b _) = compare a b
 
-
 -- constructs a 'Tree' with only one 'Vertex'
 singletonTree :: Vertex -> Tree
 singletonTree vertex = Tree vertex S.empty
@@ -140,7 +139,7 @@ matrix *** exponent =
 -- |'distanceMatrix' takes a 'Graph' and returns the distance Matrix of the
 -- Graph
 distanceMatrix :: Graph -> Matrix Int
-distanceMatrix graph = distanceMatrix' graph initial 1
+distanceMatrix graph = distanceMatrix' graph initial 1 (fromLists[[0]]) (fromLists [[1]])
         where initial = graph 
                       -- turn all zeroes into -1s
                       & fmap (\x -> if x == 0 then -1 else x)
@@ -152,8 +151,8 @@ distanceMatrix graph = distanceMatrix' graph initial 1
                                            x)
 
 -- helper Function for 'distanceMatrix'
-distanceMatrix' :: Graph -> Graph -> Int -> Graph
-distanceMatrix' graph distances step =
+distanceMatrix' :: Graph -> Matrix Int -> Int -> Matrix Int-> Matrix Int -> Matrix Int
+distanceMatrix' graph distances step previous prevprevious =
         let size       = nrows graph
             graphPowN  = graph *** step
             -- distances where all elements == -1 and elements where the
@@ -168,8 +167,10 @@ distanceMatrix' graph distances step =
                                step
                              else
                                getElem x y distances)
+            hasNoInf = not $ any (== -1) distances
+            finished   = previous == prevprevious || hasNoInf || step == size
         -- recursive call if the calculation is not finished
-        in  if step == size then distances else distanceMatrix' graph distances' (step + 1)
+        in  if finished then distances else distanceMatrix' graph distances' (step + 1) graphPowN previous
 
 -- |'eccentricitiesFromDistance' takes a Distance Matrix and returns
 -- a 'List' of 'Int' where the entry at position 0 is the eccentricity of
@@ -209,7 +210,6 @@ dfs graph startVertices =
                                                 startVertices
                                           & S.toList
                                           & S.unions
-
 
 -- takes a 'Graph' and a 'Vertex' and returns a 'List' of adjacent
 -- 'Vertex's

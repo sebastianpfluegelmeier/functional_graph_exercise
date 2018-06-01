@@ -23,7 +23,7 @@ import Data.Function
 data Matrix a = Matrix { mmap  :: Map Index a
                        , ncols :: Int
                        , nrows :: Int
-                       } deriving (Show)
+                       } deriving (Show, Eq)
 
 -- key for the 'Map' used within 'Matrix'
 type Index = (Int, Int)
