@@ -25,5 +25,3 @@ main = hspec $ do
   describe "Matrix.elementwise" $ do
     it "performs a operation on two matrices elementwise" $ do
       foldr1 (+) m1 + foldr1 (+) m2 `shouldBe` (foldr1 (+) $ elementwise (+) m1 m2)
-
-
